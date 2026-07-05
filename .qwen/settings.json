@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Bash(npm cache *)",
+      "Bash(taskkill *)",
+      "Bash(npm uninstall *)",
+      "Bash(dir *)",
+      "Bash(npx *)",
+      "Bash(powershell *)",
+      "Bash(move *)"
+    ]
+  },
+  "$version": 3
+}
