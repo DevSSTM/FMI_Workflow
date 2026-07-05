@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd workflow-erp && npm install",
+  "buildCommand": "cd workflow-erp && npm run build",
+  "outputDirectory": "workflow-erp/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
