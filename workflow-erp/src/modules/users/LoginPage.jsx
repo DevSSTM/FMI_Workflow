@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { 
-  Layers, 
   Cpu, 
   ArrowRight, 
   Lock, 
@@ -10,11 +9,10 @@ import {
   Eye, 
   EyeOff, 
   AlertCircle,
-  CheckCircle,
-  Clock,
-  ChevronRight
+  Clock
 } from 'lucide-react';
 import { useAuthStore } from '../../app/store/authStore';
+import workflowLogo from '../../../logo/logo.png';
 
 const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -80,10 +78,14 @@ const LoginPage = () => {
         {/* Top: Branding */}
         <div className={`relative z-10 transition-all duration-1000 ${mounted ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0'}`}>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl flex items-center justify-center shadow-2xl">
-              <Layers size={28} className="text-white" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white px-2 py-2 shadow-2xl shadow-navy-950/30 ring-1 ring-white/15">
+              <img
+                src={workflowLogo}
+                alt="Workflow Hub logo"
+                className="max-h-full w-auto object-contain"
+              />
             </div>
-            <div>
+            <div className="flex flex-col justify-center">
               <h2 className="text-2xl font-bold text-white tracking-tight leading-none">Workflow<span className="text-teal-400">Hub</span></h2>
               <p className="text-navy-300 text-[10px] font-bold tracking-[0.2em] uppercase mt-1">Management System</p>
             </div>
@@ -104,9 +106,20 @@ const LoginPage = () => {
       <div className="w-full lg:w-[55%] flex items-center justify-center p-6 lg:p-20 relative bg-slate-50">
         
         {/* Mobile Logo */}
-        <div className="lg:hidden absolute top-8 left-8 flex items-center gap-3">
-          <Layers size={24} className="text-navy-900" />
-          <h2 className="text-xl font-bold text-navy-900 tracking-tight">Workflow Hub</h2>
+        <div className="lg:hidden absolute left-6 right-6 top-6 flex items-center justify-center">
+          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 px-2 py-2 ring-1 ring-slate-200">
+              <img
+                src={workflowLogo}
+                alt="Workflow Hub logo"
+                className="max-h-full w-auto object-contain"
+              />
+            </div>
+            <div className="flex flex-col justify-center text-left">
+              <h2 className="text-xl font-bold text-navy-900 tracking-tight leading-none">Workflow Hub</h2>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">Management System</p>
+            </div>
+          </div>
         </div>
 
         <div className={`w-full max-w-[480px] transition-all duration-1000 delay-200 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
