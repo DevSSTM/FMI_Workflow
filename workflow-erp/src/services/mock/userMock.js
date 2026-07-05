@@ -2,10 +2,10 @@
 export const mockUsers = [
   {
     id: '1',
-    username: 'tharindu',
-    password: 'tharindu123',
-    name: 'Tharindu',
-    email: 'tharindu@company.com',
+    username: 'admin',
+    password: 'admin',
+    name: 'Admin',
+    email: 'admin@company.com',
     role: 'admin',
     department: 'IT',
     phone: '+1-555-0101',

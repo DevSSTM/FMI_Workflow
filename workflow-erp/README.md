@@ -79,7 +79,7 @@ src/
 
 | Role     | Username | Password     |
 |----------|----------|--------------|
-| Admin    | admin    | admin123     |
+| Admin    | admin    | admin        |
 | Manager  | manager  | manager123   |
 | Staff    | staff    | staff123     |
 

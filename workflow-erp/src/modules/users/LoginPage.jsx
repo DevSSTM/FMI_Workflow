@@ -21,7 +21,7 @@ const LoginPage = () => {
   const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
   
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
       username: '',
       password: '',
@@ -42,19 +42,6 @@ const LoginPage = () => {
       setLoginError(result.error || 'Authentication failed. Please verify your credentials.');
     }
   };
-
-  const handleDemoLogin = (username, password) => {
-    setValue('username', username);
-    setValue('password', password);
-  };
-
-  const demoAccounts = [
-    { role: 'Tharindu', username: 'tharindu', password: 'tharindu123', color: 'text-navy-600', bg: 'bg-navy-50' },
-    { role: 'Panchali', username: 'panchali', password: 'panchali123', color: 'text-indigo-600', bg: 'bg-indigo-50' },
-    { role: 'Nirmal', username: 'nirmal', password: 'nirmal123', color: 'text-teal-600', bg: 'bg-teal-50' },
-    { role: 'Sewmi.Hiruni', username: 'sewmi.hiruni', password: 'sewmi123', color: 'text-rose-600', bg: 'bg-rose-50' },
-    { role: 'Isma', username: 'isma', password: 'isma123', color: 'text-amber-600', bg: 'bg-amber-50' },
-  ];
 
   return (
     <div className="h-screen w-full bg-slate-50 flex flex-col lg:flex-row overflow-hidden font-sans">
@@ -218,31 +205,6 @@ const LoginPage = () => {
               )}
             </button>
           </form>
-
-          {/* Demo Section */}
-          <div className="mt-8">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex-1 h-px bg-slate-200" />
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.3em]">User Accounts</span>
-              <div className="flex-1 h-px bg-slate-200" />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {demoAccounts.map((acc, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => handleDemoLogin(acc.username, acc.password)}
-                  className={`flex flex-col items-center justify-center p-4 ${acc.bg} rounded-2xl hover:scale-[1.05] transition-all border border-transparent hover:border-slate-200 active:scale-95 group`}
-                >
-                  <div className={`p-2 rounded-xl bg-white shadow-sm mb-2 group-hover:shadow-md transition-shadow`}>
-                    <User size={18} className={acc.color} />
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-700 uppercase">{acc.role}</span>
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Support Footer */}
           <div className="mt-8 flex items-center justify-center gap-6">
