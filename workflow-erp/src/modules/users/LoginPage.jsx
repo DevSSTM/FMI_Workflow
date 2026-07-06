@@ -1,356 +1,779 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import {
-  ArrowRight,
-  Lock,
-  User,
-  Eye,
-  EyeOff,
-  AlertCircle,
-  ShieldCheck,
-  Headset,
-  Settings,
-  FileText,
-  CheckCircle,
-  UserCheck,
-  Lock as LockIcon,
-} from 'lucide-react';
 import { useAuthStore } from '../../app/store/authStore';
-import workflowLogo from '../../../logo/logo.png';
-
-const WorkflowDiagram = () => (
-  <svg viewBox="0 0 320 260" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[320px]">
-    <line x1="160" y1="40" x2="90" y2="110" stroke="#4a7fa5" strokeWidth="1.2" strokeDasharray="4 4" />
-    <line x1="160" y1="40" x2="230" y2="110" stroke="#4a7fa5" strokeWidth="1.2" strokeDasharray="4 4" />
-    <line x1="90" y1="130" x2="160" y2="170" stroke="#4a7fa5" strokeWidth="1.2" strokeDasharray="4 4" />
-    <line x1="230" y1="130" x2="160" y2="170" stroke="#4a7fa5" strokeWidth="1.2" strokeDasharray="4 4" />
-    <line x1="160" y1="190" x2="160" y2="230" stroke="#4a7fa5" strokeWidth="1.2" strokeDasharray="4 4" />
-
-    <ellipse cx="160" cy="200" rx="52" ry="10" fill="#1e5fa3" opacity="0.35" />
-    <ellipse cx="160" cy="203" rx="38" ry="6" fill="#2b79cc" opacity="0.25" />
-
-    <rect x="130" y="120" width="60" height="74" rx="6" fill="#1a4e8a" stroke="#3a8fd8" strokeWidth="1.5" />
-    <rect x="130" y="120" width="60" height="74" rx="6" fill="url(#docGrad)" />
-    <line x1="142" y1="144" x2="178" y2="144" stroke="#7ab8f0" strokeWidth="1.5" strokeLinecap="round" />
-    <line x1="142" y1="154" x2="178" y2="154" stroke="#7ab8f0" strokeWidth="1.5" strokeLinecap="round" />
-    <line x1="142" y1="164" x2="165" y2="164" stroke="#7ab8f0" strokeWidth="1.5" strokeLinecap="round" />
-    <path d="M174 120 L190 136 L174 136 Z" fill="#2563a8" />
-
-    <circle cx="160" cy="28" r="22" fill="#0f3460" stroke="#2d6ca2" strokeWidth="1.5" />
-    <circle cx="160" cy="23" r="7" fill="#5a9fd4" />
-    <path d="M145 38 Q160 30 175 38" stroke="#5a9fd4" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-
-    <circle cx="72" cy="118" r="22" fill="#0f3460" stroke="#2d6ca2" strokeWidth="1.5" />
-    <rect x="60" y="111" width="24" height="16" rx="2" fill="#5a9fd4" />
-    <rect x="58" y="114" width="28" height="14" rx="2" fill="#7ab8f0" />
-
-    <circle cx="248" cy="118" r="22" fill="#0f3460" stroke="#2d6ca2" strokeWidth="1.5" />
-    <path d="M238 118 L245 125 L260 110" stroke="#5a9fd4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-
-    <circle cx="160" cy="238" r="18" fill="#0f3460" stroke="#2d6ca2" strokeWidth="1.5" />
-    <path d="M160 228 L153 231 L153 237 Q153 243 160 246 Q167 243 167 237 L167 231 Z" fill="#5a9fd4" />
-
-    <defs>
-      <linearGradient id="docGrad" x1="130" y1="120" x2="190" y2="194" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stopColor="#1e5fa3" stopOpacity="0.9" />
-        <stop offset="100%" stopColor="#0d2d55" stopOpacity="0.9" />
-      </linearGradient>
-    </defs>
-  </svg>
-);
-
-const WaveLines = () => (
-  <svg
-    viewBox="0 0 600 140"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="absolute bottom-0 left-0 w-full"
-    preserveAspectRatio="none"
-  >
-    <defs>
-      <linearGradient id="wv1" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#1a4e8a" stopOpacity="0" />
-        <stop offset="40%" stopColor="#3b82f6" stopOpacity="0.9" />
-        <stop offset="100%" stopColor="#1a4e8a" stopOpacity="0" />
-      </linearGradient>
-      <linearGradient id="wv2" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#1a4e8a" stopOpacity="0" />
-        <stop offset="50%" stopColor="#60a5fa" stopOpacity="0.7" />
-        <stop offset="100%" stopColor="#1a4e8a" stopOpacity="0" />
-      </linearGradient>
-      <linearGradient id="wv3" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#1a4e8a" stopOpacity="0" />
-        <stop offset="60%" stopColor="#93c5fd" stopOpacity="0.5" />
-        <stop offset="100%" stopColor="#1a4e8a" stopOpacity="0" />
-      </linearGradient>
-    </defs>
-    <path d="M-20,90  C120,20  300,140 620,50" stroke="url(#wv1)" strokeWidth="2" className="wave-path-1" />
-    <path d="M-20,108 C100,40  280,130 620,70" stroke="url(#wv2)" strokeWidth="1.5" className="wave-path-2" />
-    <path d="M-20,124 C 80,60  260,120 620,90" stroke="url(#wv3)" strokeWidth="1" className="wave-path-3" />
-  </svg>
-);
-
-const CurveDivider = () => (
-  <div className="absolute right-0 top-0 h-full w-[80px] z-20 pointer-events-none">
-    <svg viewBox="0 0 80 900" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-full w-full" preserveAspectRatio="none">
-      <path d="M0 0 Q80 450 0 900 L80 900 L80 0 Z" fill="#eef3f9" />
-    </svg>
-  </div>
-);
+import workflowLogo from '../../../logo/logo.svg';
 
 const LoginPage = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loginError, setLoginError] = useState('');
-  const [mounted, setMounted] = useState(false);
   const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
-    defaultValues: { username: '', password: '' },
-  });
-
-  useEffect(() => { setMounted(true); }, []);
-
-  const onSubmit = async (data) => {
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     setLoginError('');
-    const result = await login(data.username, data.password);
+
+    const result = await login(username, password);
     if (result.success) {
       navigate('/dashboard');
-    } else {
-      setLoginError(result.error || 'Authentication failed. Please verify your credentials.');
+      return;
     }
+
+    setLoginError(result.error || 'Authentication failed. Please verify your credentials.');
   };
 
-  const features = [
-    { Icon: Settings, title: 'Workflow\nAutomation', desc: 'Automate and\naccelerate processes' },
-    { Icon: FileText, title: 'Document\nControl', desc: 'Centralize, manage,\nand secure documents' },
-    { Icon: CheckCircle, title: 'Approval\nTracking', desc: 'Gain real-time visibility\nand maintain accountability' },
-    { Icon: UserCheck, title: 'Role-Based\nAccess', desc: 'Secure access\nbased on user roles' },
-  ];
-
   return (
-    <div className="h-screen w-full flex overflow-hidden font-sans select-none">
-      <div
-        className="hidden lg:flex flex-col justify-between relative overflow-hidden"
-        style={{ width: '48%', background: 'linear-gradient(160deg,#0f2d55 0%,#0a1e3d 55%,#071428 100%)' }}
-      >
-        <div
-          className="absolute top-[-80px] right-[-80px] w-[340px] h-[340px] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 70%)' }}
-        />
+    <>
+      <style>{`
+        :root {
+          --bg-1: #07111f;
+          --bg-2: #0d1b31;
+          --primary: #2563eb;
+          --primary-2: #06b6d4;
+          --accent: #f6c85f;
+          --text: #0f172a;
+          --muted: #64748b;
+          --line: #dbe6f3;
+          --white: #ffffff;
+        }
 
-        <div className={`relative z-10 px-12 pt-12 transition-all duration-700 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-6'}`}>
-          <p className="text-[10.5px] font-semibold tracking-[0.22em] text-blue-300/80 uppercase mb-6">
-            Workflow &amp; Document Management System
-          </p>
-          <h1 className="text-[2.6rem] font-extrabold leading-tight text-white">
-            Smarter Workflows.<br />Stronger Control.
-          </h1>
-          <div className="mt-4 w-10 h-[3px] rounded-full bg-blue-500" />
-          <p className="mt-5 text-sm text-slate-400 leading-relaxed max-w-[300px]">
-            Streamline processes, ensure compliance, and drive operational excellence across your organization.
-          </p>
-        </div>
+        .login-page-shell,
+        .login-page-shell * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+          font-family: "Inter", "Segoe UI", Arial, sans-serif;
+        }
 
-        <div className={`relative z-10 flex justify-center items-center px-8 transition-all duration-700 delay-200 ${mounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-          <WorkflowDiagram />
-        </div>
+        .login-page-shell {
+          min-height: 100vh;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 24px;
+          background:
+            radial-gradient(circle at 18% 18%, rgba(6, 182, 212, 0.28), transparent 26%),
+            radial-gradient(circle at 84% 72%, rgba(37, 99, 235, 0.26), transparent 28%),
+            linear-gradient(135deg, var(--bg-1), var(--bg-2));
+          color: var(--text);
+          overflow: hidden;
+        }
 
-        <div className={`relative z-10 px-8 pb-6 transition-all duration-700 delay-300 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
-          <div className="grid grid-cols-4 gap-3">
-            {features.map(({ Icon, title, desc }) => (
-              <div key={title} className="flex flex-col items-center text-center gap-2">
-                <div className="w-10 h-10 rounded-full border border-white/15 bg-white/5 flex items-center justify-center text-blue-300 flex-shrink-0">
-                  <Icon size={18} />
+        .page-bg {
+          position: fixed;
+          inset: 0;
+          pointer-events: none;
+          background-image:
+            linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+          background-size: 50px 50px;
+          opacity: 0.7;
+        }
+
+        .login-shell {
+          position: relative;
+          z-index: 1;
+          width: min(1120px, 100%);
+          min-height: 640px;
+          max-height: calc(100vh - 48px);
+          display: grid;
+          grid-template-columns: minmax(0, 1.05fr) 430px;
+          gap: 0;
+          overflow: hidden;
+          border-radius: 34px;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          box-shadow: 0 38px 110px rgba(0, 0, 0, 0.48);
+          backdrop-filter: blur(22px);
+        }
+
+        .brand-panel {
+          position: relative;
+          padding: 46px;
+          color: var(--white);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          gap: 36px;
+          overflow: hidden;
+          min-width: 0;
+        }
+
+        .brand-panel::before {
+          content: "";
+          position: absolute;
+          width: 560px;
+          height: 560px;
+          right: -210px;
+          top: -170px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(6,182,212,0.23), transparent 60%);
+          border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .brand-panel::after {
+          content: "";
+          position: absolute;
+          width: 420px;
+          height: 420px;
+          left: -140px;
+          bottom: -170px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(246,200,95,0.16), transparent 62%);
+        }
+
+        .brand-content,
+        .system-preview {
+          position: relative;
+          z-index: 2;
+        }
+
+        .top-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 22px;
+          margin-bottom: 64px;
+        }
+
+        .logo-box {
+          width: 128px;
+          height: 78px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex: 0 0 auto;
+          border-radius: 22px;
+          background: rgba(255,255,255,0.96);
+          box-shadow: 0 18px 46px rgba(0,0,0,0.24);
+        }
+
+        .logo-box img {
+          width: 98px;
+          max-height: 58px;
+          object-fit: contain;
+          display: block;
+        }
+
+        .secure-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 9px;
+          white-space: nowrap;
+          padding: 10px 14px;
+          border-radius: 999px;
+          color: #dbeafe;
+          background: rgba(255,255,255,0.09);
+          border: 1px solid rgba(255,255,255,0.14);
+          font-size: 13px;
+          font-weight: 700;
+        }
+
+        .secure-badge i {
+          width: 8px;
+          height: 8px;
+          display: block;
+          border-radius: 50%;
+          background: var(--primary-2);
+          box-shadow: 0 0 16px var(--primary-2);
+        }
+
+        .brand-content h1 {
+          max-width: 560px;
+          font-size: clamp(38px, 4.7vw, 58px);
+          line-height: 1.05;
+          letter-spacing: -1.8px;
+          margin-bottom: 22px;
+        }
+
+        .brand-content h1 span {
+          color: var(--accent);
+        }
+
+        .brand-content p {
+          max-width: 450px;
+          color: #b8c5d9;
+          font-size: 16px;
+          line-height: 1.7;
+        }
+
+        .system-preview {
+          width: 100%;
+          padding: 20px;
+          border-radius: 26px;
+          background: linear-gradient(135deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+          border: 1px solid rgba(255,255,255,0.14);
+          box-shadow: 0 22px 60px rgba(0,0,0,0.25);
+          backdrop-filter: blur(16px);
+        }
+
+        .preview-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 18px;
+        }
+
+        .preview-head strong {
+          color: #eaf2ff;
+          font-size: 15px;
+        }
+
+        .preview-tag {
+          flex: 0 0 auto;
+          padding: 7px 12px;
+          border-radius: 999px;
+          background: rgba(6,182,212,0.16);
+          border: 1px solid rgba(6,182,212,0.28);
+          color: #a5f3fc;
+          font-size: 12px;
+          font-weight: 800;
+        }
+
+        .preview-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .mini-card {
+          min-height: 96px;
+          padding: 14px;
+          border-radius: 18px;
+          background: rgba(255,255,255,0.08);
+          border: 1px solid rgba(255,255,255,0.11);
+        }
+
+        .mini-icon {
+          width: 30px;
+          height: 30px;
+          display: grid;
+          place-items: center;
+          border-radius: 10px;
+          margin-bottom: 12px;
+          background: rgba(37,99,235,0.22);
+          color: #93c5fd;
+        }
+
+        .mini-card span {
+          display: block;
+          height: 8px;
+          margin-top: 8px;
+          border-radius: 999px;
+          background: rgba(255,255,255,0.22);
+        }
+
+        .mini-card span:nth-of-type(1) { width: 78%; }
+        .mini-card span:nth-of-type(2) { width: 52%; }
+
+        .form-panel {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 46px 38px;
+          min-width: 0;
+          background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(241,246,253,0.98));
+        }
+
+        .login-card {
+          width: 100%;
+          max-width: 358px;
+          padding: 38px 34px;
+          border-radius: 30px;
+          background: rgba(255,255,255,0.88);
+          border: 1px solid rgba(226,232,240,0.95);
+          box-shadow: 0 24px 60px rgba(15,23,42,0.12);
+        }
+
+        .card-logo {
+          width: 118px;
+          height: 72px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 0 28px;
+          border-radius: 22px;
+          background: #ffffff;
+          border: 1px solid #e7edf6;
+          box-shadow: 0 16px 32px rgba(15,23,42,0.08);
+        }
+
+        .card-logo img {
+          width: 90px;
+          max-height: 54px;
+          object-fit: contain;
+          display: block;
+        }
+
+        .login-card h2 {
+          font-size: 32px;
+          letter-spacing: -0.9px;
+          color: var(--text);
+          margin-bottom: 8px;
+        }
+
+        .login-card p {
+          color: var(--muted);
+          font-size: 15px;
+          margin-bottom: 28px;
+        }
+
+        .input-group {
+          position: relative;
+          margin-bottom: 16px;
+        }
+
+        .input-group input {
+          width: 100%;
+          height: 58px;
+          border: 1px solid var(--line);
+          outline: none;
+          border-radius: 16px;
+          padding: 0 50px;
+          background: #ffffff;
+          color: #111827;
+          font-size: 15px;
+          box-shadow: 0 9px 22px rgba(15,23,42,0.035);
+          transition: 0.22s ease;
+        }
+
+        .input-group input::placeholder { color: #94a3b8; }
+
+        .input-group input:focus {
+          border-color: var(--primary);
+          box-shadow: 0 0 0 4px rgba(37,99,235,0.12), 0 12px 26px rgba(37,99,235,0.10);
+        }
+
+        .input-group svg {
+          position: absolute;
+          top: 50%;
+          width: 21px;
+          height: 21px;
+          transform: translateY(-50%);
+          color: #64748b;
+        }
+
+        .input-group .left { left: 18px; }
+
+        .password-toggle {
+          position: absolute;
+          top: 50%;
+          right: 18px;
+          transform: translateY(-50%);
+          width: 24px;
+          height: 24px;
+          padding: 0;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          color: #64748b;
+        }
+
+        .password-toggle svg {
+          position: static;
+          transform: none;
+          width: 21px;
+          height: 21px;
+        }
+
+        .login-btn {
+          width: 100%;
+          height: 60px;
+          margin-top: 10px;
+          border: none;
+          border-radius: 17px;
+          cursor: pointer;
+          color: #ffffff;
+          font-size: 16px;
+          font-weight: 800;
+          background: linear-gradient(135deg, #0f2b66, #2563eb 58%, #06b6d4);
+          box-shadow: 0 18px 38px rgba(37,99,235,0.33);
+          transition: 0.22s ease;
+        }
+
+        .login-btn:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 24px 46px rgba(37,99,235,0.43);
+        }
+
+        .login-btn:disabled {
+          cursor: wait;
+          opacity: 0.85;
+        }
+
+        .error-note {
+          margin: -10px 0 18px;
+          color: #dc2626;
+          font-size: 13px;
+          line-height: 1.5;
+        }
+
+        .note {
+          margin-top: 20px;
+          text-align: center;
+          color: #94a3b8;
+          font-size: 12px;
+        }
+
+        @media (max-width: 980px) {
+          .login-page-shell {
+            height: auto;
+            overflow: visible;
+            align-items: flex-start;
+          }
+          .login-shell {
+            grid-template-columns: 1fr;
+            min-height: auto;
+            max-height: none;
+          }
+          .brand-panel {
+            min-height: auto;
+            padding: 40px;
+          }
+          .top-row { margin-bottom: 52px; }
+          .form-panel { padding: 40px 26px 46px; }
+        }
+
+        @media (max-width: 620px) {
+          .login-page-shell { padding: 14px; }
+          .login-shell { border-radius: 26px; }
+          .brand-panel { padding: 28px; gap: 28px; }
+          .top-row {
+            align-items: flex-start;
+            flex-direction: column;
+            margin-bottom: 36px;
+          }
+          .secure-badge { white-space: normal; }
+          .brand-content h1 { font-size: 34px; letter-spacing: -1px; }
+          .brand-content p { font-size: 15px; }
+          .form-panel { padding: 28px 18px 34px; }
+          .login-card { padding: 30px 22px; border-radius: 24px; }
+          .login-card h2 { font-size: 29px; }
+        }
+
+        @media (min-width: 981px) and (max-height: 820px) {
+          .login-page-shell {
+            padding: 16px;
+          }
+
+          .login-shell {
+            min-height: auto;
+            max-height: calc(100vh - 32px);
+          }
+
+          .brand-panel {
+            padding: 32px;
+            gap: 24px;
+          }
+
+          .top-row {
+            margin-bottom: 32px;
+          }
+
+          .brand-content h1 {
+            font-size: clamp(32px, 3.7vw, 48px);
+            margin-bottom: 16px;
+          }
+
+          .brand-content p {
+            font-size: 15px;
+            line-height: 1.55;
+          }
+
+          .system-preview {
+            padding: 16px;
+          }
+
+          .preview-head {
+            margin-bottom: 14px;
+          }
+
+          .preview-grid {
+            gap: 10px;
+          }
+
+          .mini-card {
+            min-height: 82px;
+            padding: 12px;
+          }
+
+          .mini-icon {
+            margin-bottom: 10px;
+          }
+
+          .form-panel {
+            padding: 30px 28px;
+          }
+
+          .login-card {
+            padding: 30px 26px;
+            max-width: 340px;
+          }
+
+          .card-logo {
+            margin-bottom: 22px;
+          }
+
+          .login-card p {
+            margin-bottom: 22px;
+          }
+
+          .input-group input {
+            height: 54px;
+          }
+
+          .login-btn {
+            height: 56px;
+          }
+
+          .note {
+            margin-top: 16px;
+          }
+        }
+
+        @media (min-width: 981px) and (max-height: 700px) {
+          .brand-panel {
+            padding: 26px;
+            gap: 18px;
+          }
+
+          .top-row {
+            margin-bottom: 22px;
+          }
+
+          .logo-box {
+            width: 112px;
+            height: 68px;
+          }
+
+          .logo-box img {
+            width: 86px;
+            max-height: 50px;
+          }
+
+          .secure-badge {
+            padding: 8px 12px;
+            font-size: 12px;
+          }
+
+          .brand-content h1 {
+            font-size: clamp(28px, 3.1vw, 40px);
+            margin-bottom: 12px;
+          }
+
+          .brand-content p {
+            font-size: 14px;
+            line-height: 1.45;
+          }
+
+          .system-preview {
+            padding: 14px;
+            border-radius: 22px;
+          }
+
+          .preview-head strong {
+            font-size: 14px;
+          }
+
+          .preview-tag {
+            padding: 6px 10px;
+            font-size: 11px;
+          }
+
+          .mini-card {
+            min-height: 72px;
+            padding: 10px;
+          }
+
+          .mini-icon {
+            width: 26px;
+            height: 26px;
+            margin-bottom: 8px;
+          }
+
+          .form-panel {
+            padding: 24px;
+          }
+
+          .login-card {
+            max-width: 324px;
+            padding: 24px 22px;
+            border-radius: 24px;
+          }
+
+          .card-logo {
+            width: 104px;
+            height: 64px;
+            margin-bottom: 16px;
+          }
+
+          .card-logo img {
+            width: 82px;
+            max-height: 48px;
+          }
+
+          .login-card h2 {
+            font-size: 28px;
+          }
+
+          .login-card p {
+            font-size: 14px;
+            margin-bottom: 18px;
+          }
+
+          .input-group {
+            margin-bottom: 12px;
+          }
+
+          .input-group input {
+            height: 50px;
+            font-size: 14px;
+          }
+
+          .login-btn {
+            height: 52px;
+            margin-top: 6px;
+          }
+
+          .note {
+            margin-top: 12px;
+          }
+        }
+      `}</style>
+
+      <div className="login-page-shell">
+        <div className="page-bg" />
+
+        <main className="login-shell">
+          <section className="brand-panel">
+            <div className="brand-content">
+              <div className="top-row">
+                <div className="logo-box">
+                  <img src={workflowLogo} alt="Company Logo" />
                 </div>
-                <p className="text-white text-[11px] font-bold leading-tight whitespace-pre-line">{title}</p>
-                <p className="text-slate-400 text-[9.5px] leading-tight whitespace-pre-line">{desc}</p>
+                <div className="secure-badge"><i /> Secure System Login</div>
               </div>
-            ))}
-          </div>
 
-          <div className="mt-5 flex items-center gap-2 text-slate-500">
-            <LockIcon size={12} />
-            <span className="text-[10px] font-medium tracking-wide">
-              Trusted by facilities teams to deliver efficiency, compliance, and growth.
-            </span>
-          </div>
-        </div>
-
-        <WaveLines />
-        <CurveDivider />
-      </div>
-
-      <div
-        className="flex-1 relative flex items-center justify-center p-6 lg:p-10 overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg,#edf4fb 0%,#dbe9f7 45%,#f7fbff 100%)',
-        }}
-      >
-        <div className="absolute inset-0 bg-white/35" />
-        <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at top right, rgba(59,130,246,0.14) 0%, transparent 32%), linear-gradient(135deg,rgba(180,210,240,0.40) 0%,rgba(240,248,255,0.26) 100%)' }} />
-
-        <div
-          className={`relative z-10 w-full max-w-[420px] bg-white rounded-[20px] shadow-2xl flex flex-col transition-all duration-700 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
-          style={{ boxShadow: '0 20px 60px rgba(10,30,70,0.18), 0 4px 16px rgba(10,30,70,0.10)' }}
-        >
-          <div className="px-9 pt-9 pb-7 flex flex-col gap-0">
-            <div className="flex justify-center mb-1">
-              <img src={workflowLogo} alt="FMI - Facilities Management Integrated" className="h-[70px] w-auto object-contain" />
+              <h1>Workflow &amp; <span>Document</span> Management System</h1>
+              <p>Manage approvals, documents, and task progress through one secure digital workspace.</p>
             </div>
 
-            <div className="w-16 h-[2px] bg-blue-600/30 rounded-full mx-auto mt-3 mb-5" />
-
-            <div className="text-center mb-5">
-              <h2 className="text-2xl font-extrabold text-[#0d1f3c] tracking-tight">Welcome Back</h2>
-              <p className="mt-1.5 text-[12.5px] text-slate-500 leading-snug">
-                Sign in to access the Workflow and<br />Document Management System
-              </p>
-            </div>
-
-            {loginError && (
-              <div className="mb-4 px-4 py-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2.5 animate-shake">
-                <AlertCircle size={15} className="text-red-500 flex-shrink-0 mt-0.5" />
-                <p className="text-[12px] text-red-700 font-semibold leading-snug">{loginError}</p>
+            <div className="system-preview">
+              <div className="preview-head">
+                <strong>System Modules</strong>
+                <span className="preview-tag">Live Workflow</span>
               </div>
-            )}
 
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <label htmlFor="username" className="text-[11px] font-semibold text-slate-500 tracking-wide">
-                  Email / Username
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                    <User size={16} />
-                  </span>
+              <div className="preview-grid">
+                <div className="mini-card">
+                  <div className="mini-icon">
+                    <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M8 6h13" />
+                      <path d="M8 12h13" />
+                      <path d="M8 18h13" />
+                      <path d="M3 6h.01" />
+                      <path d="M3 12h.01" />
+                      <path d="M3 18h.01" />
+                    </svg>
+                  </div>
+                  <span />
+                  <span />
+                </div>
+                <div className="mini-card">
+                  <div className="mini-icon">
+                    <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M12 20V10" />
+                      <path d="M18 20V4" />
+                      <path d="M6 20v-6" />
+                    </svg>
+                  </div>
+                  <span />
+                  <span />
+                </div>
+                <div className="mini-card">
+                  <div className="mini-icon">
+                    <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  </div>
+                  <span />
+                  <span />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="form-panel">
+            <div className="login-card">
+              <div className="card-logo">
+                <img src={workflowLogo} alt="Company Logo" />
+              </div>
+
+              <h2>Sign In</h2>
+              <p>Enter your login details to continue.</p>
+
+              {loginError && (
+                <div className="error-note" role="alert">
+                  {loginError}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <div className="input-group">
+                  <svg className="left" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path d="M20 21a8 8 0 0 0-16 0" />
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
                   <input
-                    id="username"
                     type="text"
-                    placeholder="Enter your email or username"
-                    className="w-full pl-10 pr-4 py-[10px] text-[13px] border border-slate-200 rounded-lg bg-white text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium"
-                    {...register('username', { required: 'Username is required' })}
+                    placeholder="Username"
+                    required
+                    value={username}
+                    onChange={(event) => setUsername(event.target.value)}
                   />
                 </div>
-                {errors.username && (
-                  <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1">
-                    <AlertCircle size={11} />{errors.username.message}
-                  </p>
-                )}
-              </div>
 
-              <div className="flex flex-col gap-1">
-                <label htmlFor="password" className="text-[11px] font-semibold text-slate-500 tracking-wide">
-                  Password
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                    <Lock size={16} />
-                  </span>
+                <div className="input-group">
+                  <svg className="left" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <rect x="4" y="10" width="16" height="10" rx="2" />
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                  </svg>
                   <input
-                    id="password"
                     type={showPassword ? 'text' : 'password'}
-                    placeholder="Enter your password"
-                    className="w-full pl-10 pr-10 py-[10px] text-[13px] border border-slate-200 rounded-lg bg-white text-slate-800 placeholder:text-slate-400 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium"
-                    {...register('password', { required: 'Password is required' })}
+                    placeholder="Password"
+                    required
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                    className="password-toggle"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowPassword((current) => !current)}
                   >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
+                      <circle cx="12" cy="12" r="3" />
+                      {showPassword ? <path d="M4 20L20 4" /> : null}
+                    </svg>
                   </button>
                 </div>
-                {errors.password && (
-                  <p className="text-[11px] text-red-500 font-semibold flex items-center gap-1">
-                    <AlertCircle size={11} />{errors.password.message}
-                  </p>
-                )}
-              </div>
 
-              <div className="flex items-center justify-between">
-                <label htmlFor="remember-me" className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    id="remember-me"
-                    type="checkbox"
-                    className="w-3.5 h-3.5 rounded border-slate-300 text-blue-600 focus:ring-blue-400 cursor-pointer"
-                  />
-                  <span className="text-[12px] text-slate-500 font-medium select-none">Remember me</span>
-                </label>
-                <button
-                  type="button"
-                  id="forgot-password"
-                  className="text-[12px] font-semibold text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  Forgot Password?
+                <button type="submit" className="login-btn" disabled={isLoading}>
+                  {isLoading ? 'Verifying...' : 'Login'}
                 </button>
-              </div>
+              </form>
 
-              <button
-                type="submit"
-                id="submit-login"
-                disabled={isLoading}
-                className="mt-1 w-full py-[11px] rounded-lg font-bold text-white text-sm flex items-center justify-center gap-2 transition-all duration-200 group disabled:opacity-60 disabled:cursor-not-allowed hover:-translate-y-px hover:shadow-lg"
-                style={{ background: 'linear-gradient(90deg,#1a3fa3 0%,#1e4fc9 100%)' }}
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Verifying...</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="tracking-wide">Sign In</span>
-                    <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 h-px bg-slate-200" />
-              <span className="text-[11px] text-slate-400 font-medium">or</span>
-              <div className="flex-1 h-px bg-slate-200" />
+              <div className="note">Authorized users only</div>
             </div>
-
-            <button
-              type="button"
-              id="contact-admin"
-              className="w-full py-2.5 flex items-center justify-center gap-2 text-[13px] font-semibold text-blue-600 hover:text-blue-800 transition-colors"
-            >
-              <Headset size={15} />
-              Contact Administrator
-            </button>
-
-            <div className="flex items-center justify-center gap-1.5 mt-3 text-slate-400">
-              <ShieldCheck size={13} />
-              <span className="text-[11px] font-medium">Secure enterprise access</span>
-            </div>
-          </div>
-        </div>
+          </section>
+        </main>
       </div>
-
-      <style>{`
-        @keyframes shake {
-          0%,100% { transform: translateX(0); }
-          25% { transform: translateX(-4px); }
-          75% { transform: translateX(4px); }
-        }
-        .animate-shake { animation: shake 0.35s ease-in-out; }
-
-        @keyframes waveFloat {
-          0%,100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
-        }
-        .wave-path-1 { animation: waveFloat 11s ease-in-out infinite; }
-        .wave-path-2 { animation: waveFloat 8s ease-in-out infinite 1s; }
-        .wave-path-3 { animation: waveFloat 6s ease-in-out infinite 0.5s; }
-
-        ::selection { background: #1a3fa3; color: #fff; }
-      `}</style>
-    </div>
+    </>
   );
 };
 
