@@ -1,6 +1,6 @@
-# Workflow ERP - Enterprise Workflow Management System
+# Workflow ERP - Enterprise Workflow and Document Management System
 
-A scalable, modular web application for internal enterprise workflow management based on ERP + BPM principles.
+A scalable, modular web application for internal enterprise workflow and document management based on ERP + BPM principles.
 
 ## 🎯 Features
 

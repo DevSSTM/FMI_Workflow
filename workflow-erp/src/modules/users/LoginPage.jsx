@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { 
-  Cpu, 
-  ArrowRight, 
-  Lock, 
-  User, 
-  Eye, 
-  EyeOff, 
+import {
+  Cpu,
+  ArrowRight,
+  Lock,
+  User,
+  Eye,
+  EyeOff,
   AlertCircle,
-  Clock
+  Clock,
 } from 'lucide-react';
 import { useAuthStore } from '../../app/store/authStore';
 import workflowLogo from '../../../logo/logo.png';
@@ -20,8 +20,12 @@ const LoginPage = () => {
   const [mounted, setMounted] = useState(false);
   const { login, isLoading } = useAuthStore();
   const navigate = useNavigate();
-  
-  const { register, handleSubmit, formState: { errors } } = useForm({
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       username: '',
       password: '',
@@ -35,7 +39,7 @@ const LoginPage = () => {
   const onSubmit = async (data) => {
     setLoginError('');
     const result = await login(data.username, data.password);
-    
+
     if (result.success) {
       navigate('/dashboard');
     } else {
@@ -45,24 +49,20 @@ const LoginPage = () => {
 
   return (
     <div className="h-screen w-full bg-slate-50 flex flex-col lg:flex-row overflow-hidden font-sans">
-      
-      {/* ── Left Section: Brand & Visuals ── */}
       <div className="hidden lg:flex lg:w-[45%] bg-navy-900 relative overflow-hidden flex-col justify-between p-16">
-        
-        {/* Animated Background Elements */}
         <div className="absolute inset-0 z-0">
           <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-navy-800/50 rounded-full blur-[120px] animate-pulse" />
           <div className="absolute bottom-[-15%] left-[-10%] w-[50%] h-[50%] bg-indigo-900/40 rounded-full blur-[100px]" />
-          
-          {/* Workflow Mesh Grid */}
-          <div className="absolute inset-0 opacity-[0.15]" 
-               style={{ 
-                 backgroundImage: `linear-gradient(#334e68 1px, transparent 1px), linear-gradient(90deg, #334e68 1px, transparent 1px)`, 
-                 backgroundSize: '60px 60px' 
-               }} />
+
+          <div
+            className="absolute inset-0 opacity-[0.15]"
+            style={{
+              backgroundImage: `linear-gradient(#334e68 1px, transparent 1px), linear-gradient(90deg, #334e68 1px, transparent 1px)`,
+              backgroundSize: '60px 60px',
+            }}
+          />
         </div>
 
-        {/* Top: Branding */}
         <div className={`relative z-10 transition-all duration-1000 ${mounted ? 'translate-y-0 opacity-100' : '-translate-y-10 opacity-0'}`}>
           <div className="flex items-center gap-3">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white px-2 py-2 shadow-2xl shadow-navy-950/30 ring-1 ring-white/15">
@@ -73,26 +73,26 @@ const LoginPage = () => {
               />
             </div>
             <div className="flex flex-col justify-center">
-              <h2 className="text-2xl font-bold text-white tracking-tight leading-none">Workflow<span className="text-teal-400">Hub</span></h2>
-              <p className="text-navy-300 text-[10px] font-bold tracking-[0.2em] uppercase mt-1">Management System</p>
+              <h2 className="text-2xl font-bold text-white tracking-tight leading-none">
+                Workflow<span className="text-teal-400">Hub</span>
+              </h2>
+              <p className="text-navy-300 text-[10px] font-bold tracking-[0.2em] uppercase mt-1">
+                Workflow and Document Management
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Middle: Minimalist Brand Message */}
         <div className={`relative z-10 transition-all duration-1000 delay-300 ${mounted ? 'translate-x-0 opacity-100' : '-translate-x-12 opacity-0'}`}>
           <h1 className="text-5xl xl:text-7xl font-extrabold text-white leading-tight opacity-20 select-none">
             Digital <br />
-            Workflow.
+            Workflow & <br />
+            Documents.
           </h1>
         </div>
-
       </div>
 
-      {/* ── Right Section: Login Interface ── */}
       <div className="w-full lg:w-[55%] flex items-center justify-center p-6 lg:p-20 relative bg-slate-50">
-        
-        {/* Mobile Logo */}
         <div className="lg:hidden absolute left-6 right-6 top-6 flex items-center justify-center">
           <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 shadow-sm backdrop-blur">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-slate-50 px-2 py-2 ring-1 ring-slate-200">
@@ -104,19 +104,19 @@ const LoginPage = () => {
             </div>
             <div className="flex flex-col justify-center text-left">
               <h2 className="text-xl font-bold text-navy-900 tracking-tight leading-none">Workflow Hub</h2>
-              <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">Management System</p>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-slate-400">
+                Workflow and Document Management
+              </p>
             </div>
           </div>
         </div>
 
         <div className={`w-full max-w-[480px] transition-all duration-1000 delay-200 ${mounted ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
-          
           <div className="mb-6">
             <h2 className="text-4xl font-extrabold text-navy-900 tracking-tight mb-3">Welcome Back</h2>
-            <p className="text-slate-500 font-medium">Please sign in to access your document dashboard.</p>
+            <p className="text-slate-500 font-medium">Please sign in to access your workflow and document dashboard.</p>
           </div>
 
-          {/* Error Alert */}
           {loginError && (
             <div className="mb-8 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 animate-shake">
               <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
@@ -126,7 +126,6 @@ const LoginPage = () => {
             </div>
           )}
 
-          {/* Login Form */}
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
               <label className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Username or Email</label>
@@ -151,7 +150,9 @@ const LoginPage = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-1">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Access Password</label>
-                <button type="button" className="text-xs font-bold text-navy-600 hover:text-navy-800">Forgot Password?</button>
+                <button type="button" className="text-xs font-bold text-navy-600 hover:text-navy-800">
+                  Forgot Password?
+                </button>
               </div>
               <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-navy-600 transition-colors">
@@ -179,12 +180,14 @@ const LoginPage = () => {
             </div>
 
             <div className="flex items-center gap-3 ml-1">
-               <input 
-                 type="checkbox" 
-                 id="remember" 
-                 className="w-5 h-5 rounded-lg border-slate-300 text-navy-600 focus:ring-navy-500 transition-all cursor-pointer" 
-               />
-               <label htmlFor="remember" className="text-sm font-semibold text-slate-600 cursor-pointer select-none">Remember this session</label>
+              <input
+                type="checkbox"
+                id="remember"
+                className="w-5 h-5 rounded-lg border-slate-300 text-navy-600 focus:ring-navy-500 transition-all cursor-pointer"
+              />
+              <label htmlFor="remember" className="text-sm font-semibold text-slate-600 cursor-pointer select-none">
+                Remember this session
+              </label>
             </div>
 
             <button
@@ -206,7 +209,6 @@ const LoginPage = () => {
             </button>
           </form>
 
-          {/* Support Footer */}
           <div className="mt-8 flex items-center justify-center gap-6">
             <div className="flex items-center gap-2 text-slate-400 hover:text-navy-600 transition-colors cursor-pointer">
               <Clock size={14} />
@@ -235,7 +237,7 @@ const LoginPage = () => {
         }
 
         @media (max-width: 1024px) {
-          .py-4\.5 { padding-top: 1.125rem; padding-bottom: 1.125rem; }
+          .py-4\\.5 { padding-top: 1.125rem; padding-bottom: 1.125rem; }
         }
       `}</style>
     </div>
