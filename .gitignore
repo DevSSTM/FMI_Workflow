@@ -2,3 +2,5 @@
 workflow-erp/node_modules
 workflow-erp/dist
 workflow-erp/.vercel
+workflow-erp/.env
+workflow-erp/.env.local
