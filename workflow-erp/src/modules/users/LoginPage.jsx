@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import { useAuthStore } from '../../app/store/authStore';
 import workflowLogo from '../../../logo/logo.png';
-import buildingBg from '../../assets/building_bg_bright.png';
 
 const WorkflowDiagram = () => (
   <svg viewBox="0 0 320 260" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full max-w-[320px]">
@@ -186,13 +185,11 @@ const LoginPage = () => {
       <div
         className="flex-1 relative flex items-center justify-center p-6 lg:p-10 overflow-hidden"
         style={{
-          backgroundImage: `url(${buildingBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          background: 'linear-gradient(135deg,#edf4fb 0%,#dbe9f7 45%,#f7fbff 100%)',
         }}
       >
-        <div className="absolute inset-0 bg-white/30" />
-        <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg,rgba(180,210,240,0.45) 0%,rgba(240,248,255,0.30) 100%)' }} />
+        <div className="absolute inset-0 bg-white/35" />
+        <div className="absolute inset-0" style={{ background: 'radial-gradient(circle at top right, rgba(59,130,246,0.14) 0%, transparent 32%), linear-gradient(135deg,rgba(180,210,240,0.40) 0%,rgba(240,248,255,0.26) 100%)' }} />
 
         <div
           className={`relative z-10 w-full max-w-[420px] bg-white rounded-[20px] shadow-2xl flex flex-col transition-all duration-700 delay-100 ${mounted ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
