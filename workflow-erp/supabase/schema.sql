@@ -1,4 +1,4 @@
-create extension if not exists pgcrypto;
+create extension if not exists pgcrypto with schema extensions;
 
 create table if not exists public.app_users (
   id text primary key,
@@ -249,7 +249,7 @@ returns table (
 )
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   matched_user public.app_users%rowtype;
@@ -258,7 +258,7 @@ begin
   into matched_user
   from public.app_users
   where app_users.username = p_username
-    and app_users.password_hash = crypt(p_password, app_users.password_hash)
+    and app_users.password_hash = extensions.crypt(p_password, app_users.password_hash)
   limit 1;
 
   if not found then
@@ -285,7 +285,7 @@ begin
     app_users.avatar,
     app_users.is_active,
     app_users.created_at,
-    timezone('utc', now())
+    app_users.last_login
   from public.app_users
   where app_users.id = matched_user.id;
 end;
@@ -317,7 +317,7 @@ returns table (
 )
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 begin
   insert into public.app_users (
@@ -334,7 +334,7 @@ begin
   values (
     p_id,
     p_username,
-    crypt(p_password, gen_salt('bf')),
+    extensions.crypt(p_password, extensions.gen_salt('bf')),
     p_name,
     p_email,
     p_role,
@@ -368,11 +368,11 @@ create or replace function public.app_change_password(
 returns boolean
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 begin
   update public.app_users
-  set password_hash = crypt(p_new_password, gen_salt('bf'))
+  set password_hash = extensions.crypt(p_new_password, extensions.gen_salt('bf'))
   where id = p_user_id;
 
   return found;

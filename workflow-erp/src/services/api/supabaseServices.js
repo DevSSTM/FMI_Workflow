@@ -361,7 +361,7 @@ export const authService = {
     const clientError = ensureClient();
     if (clientError) return clientError;
 
-    const { data, error } = await supabase.rpc('app_login', {
+    const { data, error } = await supabase.rpc('app_login_v2', {
       p_username: username,
       p_password: password,
     });
@@ -427,7 +427,7 @@ export const authService = {
     if (clientError) return clientError;
 
     const newUserId = userData.id || generateId('USER');
-    const { data, error } = await supabase.rpc('app_create_user', {
+    const { data, error } = await supabase.rpc('app_create_user_v2', {
       p_id: newUserId,
       p_username: userData.username,
       p_password: userData.password,
@@ -499,7 +499,7 @@ export const authService = {
     const clientError = ensureClient();
     if (clientError) return clientError;
 
-    const { data, error } = await supabase.rpc('app_change_password', {
+    const { data, error } = await supabase.rpc('app_change_password_v2', {
       p_user_id: id,
       p_new_password: newPassword,
     });
