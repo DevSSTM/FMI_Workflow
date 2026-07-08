@@ -33,7 +33,10 @@ export const useAuthStore = create((set, get) => ({
   initialize: async () => {
     const user = await userApi.getCurrentUser();
     if (user) {
-      set({ user, isAuthenticated: true });
+      const latestUserResult = user.id ? await userApi.getUserById(user.id) : null;
+      const latestUser = latestUserResult?.success ? latestUserResult.data : user;
+      localStorage.setItem('currentUser', JSON.stringify(latestUser));
+      set({ user: latestUser, isAuthenticated: true });
     }
   },
   
