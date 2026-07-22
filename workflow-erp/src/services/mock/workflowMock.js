@@ -37,7 +37,7 @@ export const workflowService = {
     return { success: true, data: mockWorkflows[index] };
   },
 
-  updateStepStatus: async (workflowId, stepId, status) => {
+  updateStepStatus: async (workflowId, stepId, status, signature = null) => {
     await new Promise((resolve) => setTimeout(resolve, 300));
     const workflow = mockWorkflows.find((w) => w.id === workflowId);
     if (!workflow) {
@@ -46,6 +46,9 @@ export const workflowService = {
     const step = workflow.steps.find((s) => s.id === stepId);
     if (step) {
       step.status = status;
+      if (signature) {
+        step.signature = signature;
+      }
       workflow.updatedAt = new Date().toISOString();
       return { success: true, data: workflow };
     }

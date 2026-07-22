@@ -77,10 +77,10 @@ export const useWorkflowStore = create((set, get) => ({
     }
   },
   
-  updateStepStatus: async (workflowId, stepId, status) => {
+  updateStepStatus: async (workflowId, stepId, status, signature) => {
     set({ isLoading: true, error: null });
     try {
-      const result = await workflowApi.updateStepStatus(workflowId, stepId, status);
+      const result = await workflowApi.updateStepStatus(workflowId, stepId, status, signature);
       if (result.success) {
         set((state) => ({
           workflows: state.workflows.map((w) =>

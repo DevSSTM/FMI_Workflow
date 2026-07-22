@@ -44,6 +44,7 @@ create table if not exists public.workflow_steps (
   portal_enabled boolean not null default false,
   direct_upload_enabled boolean not null default false,
   portal_deadline timestamptz,
+  signature text,
   created_at timestamptz not null default timezone('utc', now()),
   updated_at timestamptz not null default timezone('utc', now())
 );

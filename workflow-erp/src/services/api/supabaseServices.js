@@ -105,6 +105,7 @@ const mapWorkflow = (row, departmentsByWorkflow, stepsByWorkflow) => {
       portalEnabled: step.portal_enabled,
       directUploadEnabled: step.direct_upload_enabled,
       portalDeadline: step.portal_deadline,
+      signature: step.signature,
     }));
 
   const departments = (departmentsByWorkflow[row.id] || [])
@@ -640,7 +641,7 @@ export const workflowService = {
       const { data: existingSteps, error: existingStepsError } = await supabase
         .from(TABLES.workflowSteps)
         .eq('workflow_id', id)
-        .select('id');
+        .select('id, signature');
 
       if (existingStepsError) {
         return { success: false, error: existingStepsError.message };
@@ -660,17 +661,21 @@ export const workflowService = {
         }
       }
 
-      const stepsPayload = updates.steps.map((step, index) => ({
-        id: step.id || stepIds[index],
-        workflow_id: id,
-        name: step.name,
-        status: step.status || 'pending',
-        assigned_to: step.assignedTo || null,
-        step_order: step.order || index + 1,
-        portal_enabled: Boolean(step.portalEnabled),
-        direct_upload_enabled: Boolean(step.directUploadEnabled),
-        portal_deadline: step.portalDeadline || null,
-      }));
+      const stepsPayload = updates.steps.map((step, index) => {
+        const existing = existingSteps?.find((s) => s.id === step.id);
+        return {
+          id: step.id || stepIds[index],
+          workflow_id: id,
+          name: step.name,
+          status: step.status || 'pending',
+          assigned_to: step.assignedTo || null,
+          step_order: step.order || index + 1,
+          portal_enabled: Boolean(step.portalEnabled),
+          direct_upload_enabled: Boolean(step.directUploadEnabled),
+          portal_deadline: step.portalDeadline || null,
+          signature: step.signature || existing?.signature || null,
+        };
+      });
 
       const { error: stepsError } = await supabase
         .from(TABLES.workflowSteps)
@@ -684,13 +689,18 @@ export const workflowService = {
     return workflowService.getById(id);
   },
 
-  updateStepStatus: async (workflowId, stepId, status) => {
+  updateStepStatus: async (workflowId, stepId, status, signature = null) => {
     const clientError = ensureClient();
     if (clientError) return clientError;
 
+    const updatePayload = { status };
+    if (signature) {
+      updatePayload.signature = signature;
+    }
+
     const { error } = await supabase
       .from(TABLES.workflowSteps)
-      .update({ status })
+      .update(updatePayload)
       .eq('id', stepId)
       .eq('workflow_id', workflowId);
 

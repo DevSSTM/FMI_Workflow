@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, Clock, Circle, Upload, FileText, Download, Eye, Trash2, Edit, Copy } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Clock, Circle, Upload, FileText, Download, Eye, Trash2, Edit, Copy, PenTool, XCircle } from 'lucide-react';
 import { useWorkflowStore } from '../../app/store/workflowStore';
 import { useDocumentStore } from '../../app/store/documentStore';
 import { useAuthStore } from '../../app/store/authStore';
 import { notificationApi } from '../../services/api';
-import { Card, Badge, Button, Modal, Input, TextArea, ConfirmDialog } from '../../components/ui';
+import { Card, Badge, Button, Modal, Input, TextArea, ConfirmDialog, SignaturePad } from '../../components/ui';
 import { getStatusColor, getStatusLabel, calculateWorkflowProgress, formatDateTime } from '../../utils/helpers';
 import EditWorkflowModal from './EditWorkflowModal';
 import useToast from '../../hooks/useToast.jsx';
@@ -202,6 +202,207 @@ const DocumentPreviewModal = ({ isOpen, onClose, document: doc, onDownload }) =>
   );
 };
 
+const StepStatusModal = ({
+  isOpen,
+  onClose,
+  workflowId,
+  step,
+  stepIndex,
+  currentSteps,
+  onStatusChanged,
+}) => {
+  const { updateStepStatus } = useWorkflowStore();
+  const [status, setStatus] = useState(step?.status || 'pending');
+  const [signatureType, setSignatureType] = useState('type'); // 'type' or 'draw'
+  const [signature, setSignature] = useState('');
+  const [drawnSignature, setDrawnSignature] = useState(null);
+  const [signatureConfirmed, setSignatureConfirmed] = useState(false);
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (step) {
+      setStatus(step.status);
+      setSignature('');
+      setDrawnSignature(null);
+      setSignatureConfirmed(false);
+      setError('');
+    }
+  }, [step]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    const finalSignature = signatureType === 'draw' ? drawnSignature : signature;
+    if (!finalSignature || (typeof finalSignature === 'string' && !finalSignature.trim())) {
+      setError('E-signature is required');
+      return;
+    }
+
+    if (!signatureConfirmed) {
+      setError('Please confirm your e-signature');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = await updateStepStatus(workflowId, step.id, status, finalSignature);
+    
+    if (result.success) {
+      if (status === 'completed') {
+        const nextStep = currentSteps[stepIndex + 1];
+        if (nextStep && nextStep.status === 'pending') {
+          await updateStepStatus(workflowId, nextStep.id, 'in_progress');
+          await notificationApi.create({
+            type: 'task_assigned',
+            title: 'Workflow Task Ready',
+            message: `${result.data.name} - ${step.name} is finished. ${nextStep.name} can now begin.`,
+            userId: nextStep.assignedTo,
+            link: `/workflows/${workflowId}`,
+          });
+        }
+      }
+      onStatusChanged?.();
+      onClose();
+    } else {
+      setError(result.error || 'Failed to update step status');
+    }
+    setIsSubmitting(false);
+  };
+
+  if (!step) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={`Update Status: ${step.name}`} size="md">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Select Step Status
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { val: 'in_progress', label: 'In Progress' },
+              { val: 'completed', label: 'Completed' },
+              { val: 'rejected', label: 'Rejected' },
+            ].map((opt) => (
+              <button
+                key={opt.val}
+                type="button"
+                onClick={() => setStatus(opt.val)}
+                className={`py-2 px-3 text-sm font-medium rounded-lg border transition-all ${
+                  status === opt.val
+                    ? 'border-blue-600 bg-blue-50 text-blue-700 dark:border-blue-500 dark:bg-blue-950 dark:text-blue-300 shadow-sm'
+                    : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <PenTool size={16} />
+              Digital Signature Required
+            </span>
+            <div className="flex bg-gray-100 dark:bg-gray-900 p-0.5 rounded-lg border border-gray-200 dark:border-gray-700">
+              <button
+                type="button"
+                onClick={() => {
+                  setSignatureType('type');
+                  setError('');
+                }}
+                className={`px-3 py-1 text-xs rounded-md transition-all ${
+                  signatureType === 'type'
+                    ? 'bg-white dark:bg-gray-700 text-blue-700 shadow-sm font-medium'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Type
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSignatureType('draw');
+                  setError('');
+                }}
+                className={`px-3 py-1 text-xs rounded-md transition-all ${
+                  signatureType === 'draw'
+                    ? 'bg-white dark:bg-gray-700 text-blue-700 shadow-sm font-medium'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Draw
+              </button>
+            </div>
+          </div>
+
+          {signatureType === 'type' ? (
+            <Input
+              placeholder="Type your full name as e-signature"
+              value={signature}
+              onChange={(e) => {
+                setSignature(e.target.value);
+                setError('');
+              }}
+              helperText="Your typed name serves as your digital signature"
+            />
+          ) : (
+            <SignaturePad
+              onSave={(data) => {
+                setDrawnSignature(data);
+                setError('');
+              }}
+              label="Draw your signature below"
+            />
+          )}
+
+          {(signature || (signatureType === 'draw' && drawnSignature)) && (
+            <div className="mt-4 flex items-center gap-2 text-sm border-t border-gray-200 dark:border-gray-700 pt-3">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={signatureConfirmed}
+                  onChange={(e) => setSignatureConfirmed(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-gray-700 dark:text-gray-300">
+                  I confirm this is my authorized electronic signature
+                </span>
+              </label>
+            </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={
+              isSubmitting ||
+              !(signatureType === 'draw' ? drawnSignature : signature) ||
+              !signatureConfirmed
+            }
+          >
+            {isSubmitting ? 'Updating...' : 'Update Status'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
 const WorkflowDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -214,6 +415,7 @@ const WorkflowDetailPage = () => {
   const [viewingDoc, setViewingDoc] = useState(null);
   const [stepDocuments, setStepDocuments] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
+  const [updatingStepStatus, setUpdatingStepStatus] = useState(null); // { step, index }
   const [workflowToDelete, setWorkflowToDelete] = useState(null);
   const [documentToDelete, setDocumentToDelete] = useState(null);
   const [isDeletingWorkflow, setIsDeletingWorkflow] = useState(false);
@@ -476,6 +678,10 @@ const WorkflowDetailPage = () => {
                       <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                         <Clock size={20} className="text-blue-600" />
                       </div>
+                    ) : step.status === 'rejected' ? (
+                      <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                        <XCircle size={20} className="text-red-600" />
+                      </div>
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
                         <Circle size={20} className="text-gray-400" />
@@ -552,6 +758,30 @@ const WorkflowDetailPage = () => {
                       </div>
                     )}
 
+                    {step.signature && (
+                      <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg flex items-center justify-between">
+                        <div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Step Signature</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
+                            Status Set: <span className="font-semibold text-blue-700 dark:text-blue-400">{getStatusLabel(step.status)}</span>
+                          </p>
+                        </div>
+                        {step.signature.startsWith('data:image') ? (
+                          <div className="flex flex-col items-center bg-white dark:bg-gray-800 p-1 border rounded flex-shrink-0">
+                            <img src={step.signature} alt="Signature" className="h-8 object-contain" />
+                            <span className="text-[8px] text-gray-400 uppercase">Drawn</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1 px-2 py-1 bg-blue-50 dark:bg-blue-900/20 rounded flex-shrink-0">
+                            <PenTool size={12} className="text-blue-700" />
+                            <span className="text-xs text-blue-800 dark:text-blue-400 font-medium">
+                              {step.signature}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {/* Documents Section */}
                     <div className="mb-4">
                       <div className="flex items-center justify-between mb-3">
@@ -571,14 +801,15 @@ const WorkflowDetailPage = () => {
                         )}
                       </div>
 
-                      {user?.role === 'staff' && user?.id === step.assignedTo && step.status !== 'completed' && (
+                      {((user?.id === step.assignedTo) || canManageWorkflow) && (
                         <div className="mb-4 flex justify-end">
                           <Button
-                            variant="success"
+                            variant="secondary"
                             size="sm"
-                            onClick={() => handleStaffTaskComplete(step, index)}
+                            onClick={() => setUpdatingStepStatus({ step, index })}
                           >
-                            Complete Task And Notify Next Step
+                            <PenTool size={14} className="mr-1" />
+                            Change Step Status
                           </Button>
                         </div>
                       )}
@@ -712,6 +943,22 @@ const WorkflowDetailPage = () => {
           isOpen={showEditModal}
           onClose={handleEditClose}
           workflow={currentWorkflow}
+        />
+      )}
+
+      {/* Step Status Update Modal */}
+      {updatingStepStatus && (
+        <StepStatusModal
+          isOpen={!!updatingStepStatus}
+          onClose={() => setUpdatingStepStatus(null)}
+          workflowId={currentWorkflow.id}
+          step={updatingStepStatus.step}
+          stepIndex={updatingStepStatus.index}
+          currentSteps={currentWorkflow.steps}
+          onStatusChanged={() => {
+            showSuccess('Step status updated successfully.');
+            fetchWorkflowById(id);
+          }}
         />
       )}
 
