@@ -219,7 +219,45 @@ const recomputeWorkflowStatus = async (workflowId) => {
     .update({ status })
     .eq('id', workflowId);
 
-  return error ? { success: false, error: error.message } : { success: true };
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  // Also sync progress of any project linked to this workflow
+  try {
+    const { data: projectLinks } = await supabase
+      .from(TABLES.projectWorkflows)
+      .select('project_id')
+      .eq('workflow_id', workflowId);
+
+    if (projectLinks && projectLinks.length > 0) {
+      for (const link of projectLinks) {
+        const pId = link.project_id;
+        const { data: wfLinks } = await supabase
+          .from(TABLES.projectWorkflows)
+          .select('workflow_id')
+          .eq('project_id', pId);
+
+        if (wfLinks && wfLinks.length > 0) {
+          const wfIds = wfLinks.map((w) => w.workflow_id);
+          const { data: allSteps } = await supabase
+            .from(TABLES.workflowSteps)
+            .select('status')
+            .in('workflow_id', wfIds);
+
+          if (allSteps && allSteps.length > 0) {
+            const completedCount = allSteps.filter((s) => s.status === 'completed').length;
+            const progress = Math.round((completedCount / allSteps.length) * 100);
+            await supabase.from(TABLES.projects).update({ progress }).eq('id', pId);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // Ignore non-critical project sync errors
+  }
+
+  return { success: true };
 };
 
 const fetchWorkflowsInternal = async (workflowId = null) => {
@@ -698,11 +736,21 @@ export const workflowService = {
       updatePayload.signature = signature;
     }
 
-    const { error } = await supabase
+    let { error } = await supabase
       .from(TABLES.workflowSteps)
       .update(updatePayload)
       .eq('id', stepId)
       .eq('workflow_id', workflowId);
+
+    // Fallback if signature column doesn't exist on Supabase DB
+    if (error && signature && (error.message?.includes('signature') || error.code === '42703')) {
+      const fallback = await supabase
+        .from(TABLES.workflowSteps)
+        .update({ status })
+        .eq('id', stepId)
+        .eq('workflow_id', workflowId);
+      error = fallback.error;
+    }
 
     if (error) {
       return { success: false, error: error.message };

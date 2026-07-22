@@ -49,6 +49,13 @@ export const workflowService = {
       if (signature) {
         step.signature = signature;
       }
+
+      if (workflow.steps.length > 0 && workflow.steps.every((s) => s.status === 'completed')) {
+        workflow.status = 'completed';
+      } else if (workflow.steps.some((s) => s.status === 'in_progress' || s.status === 'completed')) {
+        workflow.status = 'in_progress';
+      }
+
       workflow.updatedAt = new Date().toISOString();
       return { success: true, data: workflow };
     }

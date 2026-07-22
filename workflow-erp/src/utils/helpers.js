@@ -102,8 +102,10 @@ export function getStatusLabel(status) {
  * Calculate workflow progress percentage
  */
 export function calculateWorkflowProgress(steps) {
-  if (!steps || steps.length === 0) return 0;
-  const completedSteps = steps.filter((step) => step.status === 'completed').length;
+  if (!steps || !Array.isArray(steps) || steps.length === 0) return 0;
+  const completedSteps = steps.filter(
+    (step) => step.status?.toLowerCase() === 'completed' || step.status?.toLowerCase() === 'approved'
+  ).length;
   return Math.round((completedSteps / steps.length) * 100);
 }
 
