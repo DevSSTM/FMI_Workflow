@@ -4,6 +4,8 @@ import { ArrowLeft, CheckCircle, Clock, Circle, Upload, FileText, Download, Eye,
 import { useWorkflowStore } from '../../app/store/workflowStore';
 import { useDocumentStore } from '../../app/store/documentStore';
 import { useAuthStore } from '../../app/store/authStore';
+import { useApprovalStore } from '../../app/store/approvalStore';
+import { useUserStore } from '../../app/store/userStore';
 import { notificationApi } from '../../services/api';
 import { Card, Badge, Button, Modal, Input, TextArea, ConfirmDialog, SignaturePad } from '../../components/ui';
 import { getStatusColor, getStatusLabel, calculateWorkflowProgress, formatDateTime } from '../../utils/helpers';
@@ -403,6 +405,202 @@ const StepStatusModal = ({
   );
 };
 
+const RequestApprovalModal = ({
+  isOpen,
+  onClose,
+  workflowId,
+  workflowName,
+  step,
+  onApprovalRequested,
+}) => {
+  const { createApproval } = useApprovalStore();
+  const { fetchUsers, users } = useUserStore();
+  const { user: currentUser } = useAuthStore();
+  const [selectedDept, setSelectedDept] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
+  const [selectedUser, setSelectedUser] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [comment, setComment] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchUsers();
+      setSelectedDept('');
+      setSelectedRole('');
+      setSelectedUser('');
+      setDueDate('');
+      setComment('');
+      setError('');
+    }
+  }, [isOpen, fetchUsers]);
+
+  // Dynamic list of departments based on users
+  const staticDepartments = ['Management', 'Engineering', 'Finance', 'HR', 'Marketing', 'Operations', 'Sales', 'Support'];
+  const departments = users.length > 0
+    ? [...new Set(users.map((u) => u.department))].filter(Boolean)
+    : staticDepartments;
+
+  const filteredUsers = users.filter((u) => {
+    const matchesDept = !selectedDept || u.department === selectedDept;
+    const matchesRole = !selectedRole || u.role === selectedRole;
+    return u.isActive && matchesDept && matchesRole && u.id !== currentUser?.id;
+  });
+
+  // Automatically clear or set selected user if it's no longer in the filtered list
+  useEffect(() => {
+    if (selectedUser && !filteredUsers.some((u) => u.id === selectedUser)) {
+      setSelectedUser('');
+    }
+  }, [selectedDept, selectedRole, filteredUsers, selectedUser]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    if (!selectedUser) {
+      setError('Please select an approver user.');
+      return;
+    }
+
+    const approver = users.find((u) => u.id === selectedUser);
+    if (!approver) {
+      setError('Selected approver not found.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const approvalData = {
+      requestType: 'workflow',
+      workflowId,
+      workflowName,
+      stepId: step.id,
+      stepName: step.name,
+      requestedBy: currentUser?.id,
+      requestedByName: currentUser?.name || 'Unknown',
+      assignedTo: approver.id,
+      assignedToName: approver.name,
+      dueDate: dueDate || null,
+      status: 'pending',
+      comments: comment.trim()
+        ? [
+            {
+              userId: currentUser?.id,
+              userName: currentUser?.name || 'Unknown',
+              text: comment.trim(),
+            },
+          ]
+        : [],
+    };
+
+    const result = await createApproval(approvalData);
+    if (result.success) {
+      onApprovalRequested?.();
+      onClose();
+    } else {
+      setError(result.error || 'Failed to request approval.');
+    }
+    setIsSubmitting(false);
+  };
+
+  if (!step) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={`Request Approval: ${step.name}`} size="md">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Department
+            </label>
+            <select
+              value={selectedDept}
+              onChange={(e) => setSelectedDept(e.target.value)}
+              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">All Departments</option>
+              {departments.map((dept) => (
+                <option key={dept} value={dept}>
+                  {dept}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Position / Role
+            </label>
+            <select
+              value={selectedRole}
+              onChange={(e) => setSelectedRole(e.target.value)}
+              className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="">All Roles</option>
+              <option value="admin">Admin</option>
+              <option value="manager">Manager</option>
+              <option value="staff">Staff</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Approver User <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={selectedUser}
+            onChange={(e) => setSelectedUser(e.target.value)}
+            required
+            className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-2 text-sm text-gray-900 dark:text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          >
+            <option value="">-- Select Approver --</option>
+            {filteredUsers.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name} ({getStatusLabel(u.role)} - {u.department})
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            {filteredUsers.length} users match the selected department and role.
+          </p>
+        </div>
+
+        <Input
+          label="Due Date"
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+        />
+
+        <TextArea
+          label="Notes / Comments"
+          placeholder="Why is this approval needed?"
+          rows={3}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+        />
+
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <Button type="button" variant="secondary" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" variant="primary" disabled={isSubmitting || !selectedUser}>
+            {isSubmitting ? 'Requesting...' : 'Request Approval'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
 const WorkflowDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -410,12 +608,15 @@ const WorkflowDetailPage = () => {
   const { documents, fetchByStepId, downloadDocument, deleteDocument } = useDocumentStore();
   const { user } = useAuthStore();
   const { showSuccess, showError, ToastComponent } = useToast();
+  const { fetchApprovals, approvals } = useApprovalStore();
+  const { fetchUsers } = useUserStore();
   const [expandedSteps, setExpandedSteps] = useState({});
   const [uploadingToStep, setUploadingToStep] = useState(null);
   const [viewingDoc, setViewingDoc] = useState(null);
   const [stepDocuments, setStepDocuments] = useState({});
   const [showEditModal, setShowEditModal] = useState(false);
   const [updatingStepStatus, setUpdatingStepStatus] = useState(null); // { step, index }
+  const [requestingApprovalForStep, setRequestingApprovalForStep] = useState(null); // step
   const [workflowToDelete, setWorkflowToDelete] = useState(null);
   const [documentToDelete, setDocumentToDelete] = useState(null);
   const [isDeletingWorkflow, setIsDeletingWorkflow] = useState(false);
@@ -425,7 +626,9 @@ const WorkflowDetailPage = () => {
 
   useEffect(() => {
     fetchWorkflowById(id);
-  }, [id, fetchWorkflowById]);
+    fetchApprovals();
+    fetchUsers();
+  }, [id, fetchWorkflowById, fetchApprovals, fetchUsers]);
 
   useEffect(() => {
     // Fetch documents for each step when workflow loads
@@ -877,6 +1080,70 @@ const WorkflowDetailPage = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Approvals Section */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                          <CheckCircle size={16} />
+                          Department & Position Approvals
+                        </h4>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => setRequestingApprovalForStep(step)}
+                        >
+                          <PenTool size={14} className="mr-1" />
+                          Request Approval
+                        </Button>
+                      </div>
+
+                      {(() => {
+                        const stepApprovalsList = approvals.filter(
+                          (a) => a.workflowId === currentWorkflow.id && a.stepId === step.id
+                        );
+
+                        if (stepApprovalsList.length === 0) {
+                          return (
+                            <div className="text-center py-4 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                              <p className="text-xs">No department/position approvals requested for this step yet.</p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div className="space-y-2">
+                            {stepApprovalsList.map((app) => (
+                              <div
+                                key={app.id}
+                                className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 text-sm"
+                              >
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-2">
+                                    <span className="font-medium text-gray-900 dark:text-white">
+                                      Assigned Approver: {app.assignedToName}
+                                    </span>
+                                    <Badge variant={getStatusColor(app.status)}>
+                                      {getStatusLabel(app.status)}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Requested by {app.requestedByName} • {formatDateTime(app.requestedAt)}
+                                    {app.dueDate && ` • Due: ${formatDate(app.dueDate)}`}
+                                  </p>
+                                </div>
+                                <Link to={`/approvals/${app.id}`}>
+                                  <Button variant="ghost" size="sm">
+                                    <Eye size={14} className="mr-1" />
+                                    View Request
+                                  </Button>
+                                </Link>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
                 )}
               </div>
@@ -958,6 +1225,21 @@ const WorkflowDetailPage = () => {
           onStatusChanged={() => {
             showSuccess('Step status updated successfully.');
             fetchWorkflowById(id);
+          }}
+        />
+      )}
+
+      {/* Request Approval Modal */}
+      {requestingApprovalForStep && (
+        <RequestApprovalModal
+          isOpen={!!requestingApprovalForStep}
+          onClose={() => setRequestingApprovalForStep(null)}
+          workflowId={currentWorkflow.id}
+          workflowName={currentWorkflow.name}
+          step={requestingApprovalForStep}
+          onApprovalRequested={() => {
+            showSuccess('Approval request sent successfully.');
+            fetchApprovals();
           }}
         />
       )}
