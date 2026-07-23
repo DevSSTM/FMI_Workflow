@@ -18,6 +18,7 @@ const EditProjectModal = ({ isOpen, onClose, project }) => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     defaultValues: {
       name: '',
+      managerName: '',
       description: '',
       startDate: '',
       endDate: '',
@@ -32,6 +33,7 @@ const EditProjectModal = ({ isOpen, onClose, project }) => {
       // Set form values from existing project
       reset({
         name: project.name || '',
+        managerName: project.managerName || '',
         description: project.description || '',
         startDate: project.startDate || '',
         endDate: project.endDate || '',
@@ -82,6 +84,7 @@ const EditProjectModal = ({ isOpen, onClose, project }) => {
   const onSubmit = async (data) => {
     const updateData = {
       ...data,
+      managerName: data.managerName,
       teamMembers: selectedTeamMembers,
       teamMemberNames: selectedTeamMembers.map(id => getUserName(id)),
       workflowIds: selectedWorkflows,
@@ -106,6 +109,13 @@ const EditProjectModal = ({ isOpen, onClose, project }) => {
           placeholder="Enter project name"
           error={errors.name?.message}
           {...register('name', { required: 'Project name is required' })}
+        />
+
+        <Input
+          label="Project Manager Name"
+          placeholder="Enter project manager name"
+          error={errors.managerName?.message}
+          {...register('managerName')}
         />
 
         <TextArea

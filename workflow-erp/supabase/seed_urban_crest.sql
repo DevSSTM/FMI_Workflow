@@ -14,7 +14,7 @@ values (
   'Operational management project for Urban Crest Apartments based on the resident handbook, janitor standing orders, and utility disconnection procedure.',
   'active',
   '2',
-  'Panchali',
+  'Project Manager',
   current_date,
   12
 )

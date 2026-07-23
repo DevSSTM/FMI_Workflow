@@ -31,6 +31,7 @@ const CreateProjectModal = ({ isOpen, onClose }) => {
   const { register, handleSubmit, formState: { errors }, reset } = useForm({
     defaultValues: {
       name: '',
+      managerName: user?.name || '',
       description: '',
       startDate: '',
       endDate: '',
@@ -78,7 +79,7 @@ const CreateProjectModal = ({ isOpen, onClose }) => {
       ...data,
       status: 'pending_approval',
       manager: user?.id,
-      managerName: user?.name,
+      managerName: data.managerName || user?.name || '',
       teamMembers: selectedTeamMembers.length > 0 ? selectedTeamMembers : [user?.id],
       teamMemberNames: selectedTeamMembers.length > 0 
         ? selectedTeamMembers.map(id => getUserName(id))
@@ -150,6 +151,13 @@ const CreateProjectModal = ({ isOpen, onClose }) => {
           placeholder="Enter project name"
           error={errors.name?.message}
           {...register('name', { required: 'Project name is required' })}
+        />
+
+        <Input
+          label="Project Manager Name"
+          placeholder="Enter project manager name"
+          error={errors.managerName?.message}
+          {...register('managerName')}
         />
 
         <TextArea
